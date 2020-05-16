@@ -112,6 +112,44 @@ def sample_multinomial(state_curr, args, node="pi", greedy=False):
         probs = state_curr[node].data
         return sample_eps_with_check(probs, args.epsilon, greedy=greedy)
 
+
+
+def q_learning_epsilon_greedy(state_curr, args, node="V"):
+    ''' epsilon greedy sampling
+
+    Args:
+        state_curr(dict): current state containing all data
+        args(dict): customized arguments for sampling. `epsilon` is used
+        node(str): name string for q key value , default is "V"
+
+    Returns:
+        A list of actions using epsilon greedy sampling.
+    '''
+    n_actions = len(state_curr['V'])
+    a = 0
+    if np.random.random() < args.epsilon:
+        a = np.random.randint(0, n_actions, 1)
+    else:
+        q = torch.max(state_curr['V'], dim=-1)[0]
+        v = torch.max(state_curr['V'],dim=-1)[1]
+    return q, v
+
+
+def epsilon_greedy(state_curr, args, node="pi"):
+    ''' epsilon greedy sampling
+
+    Args:
+        state_curr(dict): current state containing all data
+        args(dict): customized arguments for sampling. `epsilon` is used
+        node(str): name string for policy, default is "pi"
+
+    Returns:
+        A list of actions using epsilon greedy sampling.
+    '''
+    return sample_multinomial(state_curr, args, node=node, greedy=True)
+
+
+
 def epsilon_greedy(state_curr, args, node="pi"):
     ''' epsilon greedy sampling
 
@@ -139,4 +177,4 @@ def original_distribution(state_curr, args, node="pi"):
     probs = state_curr[node].data
     batchsize = probs.size(0)
     # Return a list of list.
-    return [ list(probs[i]) for i in range(batchsize) ]
+    return [list(probs[i]) for i in range(batchsize) ]

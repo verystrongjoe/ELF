@@ -69,6 +69,8 @@ class ValueStats:
         self.reset()
 
     def feed(self, v):
+
+        v = v.sum() # changes..
         self.summation += v
         if v > self.max_value:
             self.max_value = v

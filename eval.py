@@ -15,6 +15,11 @@ import os
 from rlpytorch import load_env, Evaluator, ArgsProvider, EvalIters
 
 if __name__ == '__main__':
+
+    os.environ['game'] = './rts/game_MC/game'
+    os.environ['model_file'] = './rts/game_MC/model'
+    os.environ['model'] = 'actor_critic'
+
     evaluator = Evaluator(stats=False)
     eval_iters = EvalIters()
     env, args = load_env(os.environ, overrides=dict(actor_only=True), evaluator=evaluator, eval_iters=eval_iters)

@@ -16,7 +16,6 @@ from .utils import add_err
 
 # Q learning
 class Q_learning:
-    ''' An actor critic model '''
     def __init__(self):
         ''' Initialization of `DiscountedReward` and `ValueMatcher`.
         Initialize the arguments needed (num_games, batchsize, value_node) and in child_providers.
@@ -28,7 +27,7 @@ class Q_learning:
             call_from = self,
             define_args = [
                 ("a_node", "a"),
-                ("Q_node", "Q")
+                ("Q_node", "V")
             ],
             more_args = ["num_games", "batchsize"],
             child_providers = [ self.discounted_reward.args ],
@@ -48,15 +47,15 @@ class Q_learning:
         '''
         m = mi["model"]
         args = self.args
-        Q_node = args.Q_node
-        a_node = args.a_node
+        Q_node = "V"
+        a_node = "a"
 
         T = batch["s"].size(0)
 
         state_curr = m(batch.hist(T - 1))
         Q = state_curr[Q_node].squeeze().data
         V = Q.max(1)
-        self.discounted_reward.setR(V, stats)
+        self.discounted_reward.setR(V.values, stats)
 
         err = None
 

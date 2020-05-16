@@ -9,10 +9,54 @@ import torch.nn as nn
 from copy import deepcopy
 from collections import Counter
 
-from rlpytorch import Model, ActorCritic
+from rlpytorch import Model, ActorCritic, Q_learning
 from actor_critic_changed import ActorCriticChanged
 from forward_predict import ForwardPredict
 from trunk import MiniRTSNet
+
+
+class Model_DQN(Model):
+
+    def __init__(self, args):
+        super(Model_DQN, self).__init__(args)
+        self._init(args)
+
+    def _init(self, args):
+        params = args.params
+        assert isinstance(params["num_action"], int), "num_action has to be a number. action = " + str(params["num_action"])
+
+        self.params = params
+        self.net = MiniRTSNet(args)
+        last_num_channel = self.net.num_channels[-1]
+
+        if self.params.get("model_no_spatial", False):
+            self.num_unit = params["num_unit_type"]
+            linear_in_dim = last_num_channel
+        else:
+            linear_in_dim = last_num_channel * 25
+
+        self.linear_value = nn.Linear(linear_in_dim, params["num_action"])
+
+    def get_define_args():
+        return MiniRTSNet.get_define_args()
+
+    def forward(self, x):
+        if self.params.get("model_no_spatial", False):
+            # Replace a complicated network with a simple retraction.
+            # Input: batchsize, channel, height, width
+            xreduced = x["s"].sum(2).sum(3).squeeze()
+            xreduced[:, self.num_unit:] /= 20 * 20
+            output = self._var(xreduced)
+        else:
+            output = self.net(self._var(x["s"]))
+
+        return self.decision(output)
+
+    def decision(self, h):
+        h = self._var(h)
+        value = self.linear_value(h)
+        return dict(V=value)
+
 
 class Model_ActorCritic(Model):
     def __init__(self, args):
@@ -99,5 +143,6 @@ class Model_ActorCritic(Model):
 Models = {
     "actor_critic": [Model_ActorCritic, ActorCritic],
     "actor_critic_changed": [Model_ActorCritic, ActorCriticChanged],
+    "dqn": [Model_DQN, Q_learning],
     "forward_predict": [Model_ActorCritic, ForwardPredict]
 }

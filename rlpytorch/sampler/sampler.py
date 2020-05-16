@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-from .sample_methods import sample_multinomial, epsilon_greedy
+from .sample_methods import sample_multinomial, epsilon_greedy, q_learning_epsilon_greedy
 from ..args_provider import ArgsProvider
 
 class Sampler:
@@ -20,13 +20,15 @@ class Sampler:
         self.args = ArgsProvider(
             call_from = self,
             define_args = [
-                ("sample_policy", dict(type=str, choices=["epsilon-greedy", "multinomial", "uniform"], help="Sample policy", default="epsilon-greedy")),
+                ('wtf', 3),
+                ("sample_policy", dict(type=str, choices=["epsilon-greedy", "q_learning_epsilon_greedy", "multinomial", "uniform"], help="Sample policy", default="epsilon-greedy")),
                 ("greedy", dict(action="store_true")),
                 ("epsilon", dict(type=float, help="Used in epsilon-greedy approach", default=0.00)),
-                ("sample_nodes", dict(type=str, help=";-separated nodes to be sampled and saved", default="pi,a")),
+                ("sample_nodes", dict(type=str, help=";-separated nodes to be sampled and saved", default="V,a")),
             ],
             on_get_args = self._on_get_args,
         )
+        print(self.args)
 
     def _on_get_args(self, _):
         self.sample_nodes = []
@@ -40,11 +42,14 @@ class Sampler:
         Args:
             state_curr(dict): current state containing all data
         '''
-        #TODO: This only handles epsilon_greedy and multinomial for now. Add uniform and original_distribution?
-        sampler = epsilon_greedy if self.args.greedy else sample_multinomial
+        if self.args.sample_policy == 'q_learning_epsilon_greedy':
+            sampler = q_learning_epsilon_greedy
+        else:
+            sampler = epsilon_greedy if self.args.greedy else sample_multinomial
 
         actions = dict()
-        for pi_node, a_node in self.sample_nodes:
-            actions[a_node] = sampler(state_curr, self.args, node=pi_node)
-            actions[pi_node] = state_curr[pi_node].data
+
+        # todo : check self.sample_nodes in case when it can have multiple nodes
+        for Q_node, a_node in self.sample_nodes:
+            actions[Q_node], actions[a_node] = sampler(state_curr, self.args, node=Q_node)
         return actions

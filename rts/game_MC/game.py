@@ -61,6 +61,26 @@ class Loader(CommonLoader):
             reply=None
         )
 
+    def _get_actor_q_spec(self):
+        reply_keys = ["V",  "a"]
+
+        return dict(
+            batchsize=self.args.batchsize,
+            input=dict(T=1, keys=set(["s", "last_r", "terminal"])),
+            reply=dict(T=1, keys=set(reply_keys + self._unit_action_keys())),
+        )
+
+    def _get_train_q_spec(self):
+        keys = ["s", "last_r", "V", "terminal",  "a"]
+        return dict(
+            batchsize=self.args.batchsize,
+            input=dict(T=self.args.T, keys=set(keys + self._unit_action_keys())),
+            reply=None
+        )
+
+
+
+
     def _get_reduced_predict(self):
         return dict(
             batchsize=self.args.batchsize,

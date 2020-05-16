@@ -10,8 +10,10 @@ from .model_loader import ModelLoader, load_env
 from .model_interface import ModelInterface
 
 from .sampler import Sampler
-from .methods import ActorCritic, RNNActorCritic
+from .methods import ActorCritic, RNNActorCritic, Q_learning
 from .runner import EvalIters, SingleProcessRun
-from .trainer import Trainer, Evaluator, LSTMTrainer
+# from .trainer import Trainer, Evaluator, LSTMTrainer
+from .trainer import Trainer, Evaluator, LSTMTrainer, Q_Trainer, Q_Evaluator
+
 
 from .methods import add_err, PolicyGradient, DiscountedReward, ValueMatcher

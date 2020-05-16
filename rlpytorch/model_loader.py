@@ -10,13 +10,16 @@ import argparse
 from .args_provider import ArgsProvider
 from .sampler import Sampler
 from .model_interface import ModelInterface
+import torch
 # from .utils.utils import get_total_size
+
 
 def load_module(mod):
     ''' Load a python module'''
     sys.path.insert(0, os.path.dirname(mod))
     module = __import__(os.path.basename(mod))
     return module
+
 
 class ModelLoader:
     ''' Class to load a previously saved model'''
@@ -49,10 +52,10 @@ class ModelLoader:
         combined_args = self.define_args_final + model_class.get_define_args() if hasattr(model_class, "get_define_args") else self.define_args_final
 
         self.args = ArgsProvider(
-            call_from = self,
-            define_args = combined_args,
-            more_args = ["gpu"],
-            on_get_args = self._on_get_args
+            call_from=self,
+            define_args=combined_args,
+            more_args=["gpu"],
+            on_get_args=self._on_get_args
         )
 
     def _on_get_args(self, _):
@@ -92,7 +95,9 @@ class ModelLoader:
                     sys.exit(1)
 
         if args.gpu is not None and args.gpu >= 0:
-            model.cuda(device_id=args.gpu)
+            # todo : check to use gpu!
+            #model.cuda(device=args.gpu)
+            model.to(torch.device('cuda:'+str(args.gpu)))
 
         return model
 
@@ -109,6 +114,7 @@ def load_env(envs, num_models=None, overrides=dict(), defaults=dict(), **kwargs)
     game = load_module(envs["game"]).Loader()
     model_file = load_module(envs["model_file"])
     # TODO This is not good, need to fix.
+
     if len(model_file.Models[envs["model"]]) == 2:
         model_class, method_class = model_file.Models[envs["model"]]
         sampler_class = Sampler
@@ -133,4 +139,4 @@ def load_env(envs, num_models=None, overrides=dict(), defaults=dict(), **kwargs)
 
     parser = argparse.ArgumentParser()
     all_args = ArgsProvider.Load(parser, env, global_defaults=defaults, global_overrides=overrides)
-    return  env, all_args
+    return env, all_args

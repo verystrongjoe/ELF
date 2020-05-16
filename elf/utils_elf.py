@@ -152,8 +152,10 @@ class Batch:
                 elif isinstance(v, (int, float)):
                     bk.fill_(v)
                 else:
-                    bk[:] = v
-
+                    if list(v.shape) == [128,1]:
+                        bk[:] = v.t()
+                    else:
+                        bk[:] = v
             else:
                 raise ValueError("Batch[%s]: \"%s\" in reply is missing in batch specification" % (batch_key, k))
 
@@ -188,14 +190,14 @@ class Batch:
         else:
             return self[key][s]
 
-    def transfer_cpu2gpu(self, batch_gpu, async=True):
+    def transfer_cpu2gpu(self, batch_gpu, non_blocking=True):
         ''' transfer batch data to gpu '''
         # For each time step
         for k, v in self.batch.items():
-            batch_gpu[k].copy_(v, async=async)
+            batch_gpu[k].copy_(v, non_blocking=non_blocking)
 
-    def transfer_cpu2cpu(self, batch_dst, async=True):
-        ''' transfer batch data to cpu '''
+    def transfer_cpu2cpu(self, batch_dst, non_blocking=True):
+        ''' transfer batch data to cpu _'''
 
         # For each time step
         for k, v in self.batch.items():

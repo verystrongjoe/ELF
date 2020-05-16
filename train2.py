@@ -1,25 +1,12 @@
-"""
+# Copyright (c) 2017-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree.
 
---batchsize 128
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
---freq_update 1
-
---players "type=AI_NN,fs=50,args=backup/AI_SIMPLE|start/500|decay/0.99;type=AI_SIMPLE,fs=20"
-
---num_games 1024
-
---tqdm
-
---T 20
-
---additional_labels id,last_terminal
-
---trainer_stats winrate
-
---keys_in_reply V --gpu 0
-
-
-"""
 from datetime import datetime
 import sys
 import os
@@ -46,6 +33,8 @@ if __name__ == '__main__':
 
     GC.reg_callback("train", trainer.train)
     GC.reg_callback("actor", trainer.actor)
-    runner.setup(GC, episode_summary=trainer.episode_summary, episode_start=trainer.episode_start)
+    runner.setup(GC, episode_summary=trainer.episode_summary,
+                episode_start=trainer.episode_start)
+
     runner.run()
 

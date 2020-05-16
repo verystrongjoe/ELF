@@ -147,11 +147,15 @@ class CommonLoader:
         desc = {}
         # For actor model, no reward needed, we only want to get input and return distribution of actions.
         # sampled action and and value will be filled from the reply.
-        desc["actor"] = self._get_actor_spec()
+        # todo : change for dqn
+        # desc["actor"] = self._get_actor_q_spec()
+        desc["actor"] = self._get_actor_q_spec()
 
         if not args.actor_only:
             # For training, we want input, action (filled by actor models), value (filled by actor models) and reward.
-            desc["train"] = self._get_train_spec()
+            # todo : change for dqn
+            # desc["train"] = self._get_train_q_spec()
+            desc["train"] = self._get_train_q_spec()
 
         self.more_labels.add_labels(desc)
 
